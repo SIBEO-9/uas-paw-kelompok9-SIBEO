@@ -61,14 +61,12 @@ def main(global_config, **settings):
     config.add_route('delete_module', '/api/modules/{id}', request_method='DELETE')  # Instructor owner only
 
     config.add_route('test_create', '/api/test-create', request_method='POST')
-    
 
-    # OLD ROUTES (akan dihapus nanti)
-    # config.add_route('courses', '/api/courses', request_method='GET')  # DUPLIKAT dengan get_all_courses
-    # config.add_route('course_detail', '/api/courses/{id}', request_method='GET')  # DUPLIKAT dengan get_course_detail
-    # config.add_route('modules', '/api/courses/{course_id}/modules', request_method='GET')  # GANTI ke get_course_modules
-    # config.add_route('create_module', '/api/courses/{course_id}/modules', request_method='POST')  # GANTI ke create_course_module
-    # config.add_route('enroll', '/api/enroll', request_method='POST')  # GANTI ke create_enrollment
+    # Dashboard routes
+    config.add_route('instructor_dashboard', '/api/instructor/dashboard', request_method='GET')
+    config.add_route('course_students', '/api/courses/{id}/students', request_method='GET')  # Instructor lihat student di course
+    config.add_route('student_progress', '/api/student/progress', request_method='GET')
+    
     
     # Scan views
     config.scan('.views')
