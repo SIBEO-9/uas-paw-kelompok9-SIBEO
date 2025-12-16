@@ -1,9 +1,8 @@
+# File: src/alembic/versions/adf44c39dbd4_hash_existing_passwords.py
 """Hash existing passwords
-
 Revision ID: adf44c39dbd4
 Revises: 570f61b2d952
 Create Date: 2025-12-14 10:00:00.000000
-
 """
 from alembic import op
 import sqlalchemy as sa
@@ -16,8 +15,9 @@ down_revision = '570f61b2d952'
 branch_labels = None
 depends_on = None
 
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# ⭐⭐ PERBAIKAN DI SINI: SAMAKAN SCHEME DENGAN models.py ⭐⭐
+# Password hashing context - GUNAKAN ARGON2 (sama dengan models.py)
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 def upgrade() -> None:
     """Hash semua password yang masih plaintext"""
@@ -42,8 +42,9 @@ def upgrade() -> None:
         user_id = row['id']
         plain_password = row['password']
         
-        # Skip if already looks like a hash (starts with $2b$)
-        if plain_password.startswith('$2b$'):
+        # ⭐⭐ PERBAIKAN DI SINI: CEK ARGON2 & BCRYT ⭐⭐
+        # Skip jika sudah terlihat seperti hash (Argon2 atau bcrypt)
+        if plain_password.startswith('$argon2') or plain_password.startswith('$2b$'):
             continue
             
         # Hash the password
@@ -63,5 +64,4 @@ def downgrade() -> None:
     """Warning: Cannot revert password hashing!"""
     print("⚠️  WARNING: Cannot revert password hashing migration")
     print("   Passwords will remain hashed")
-    # Note: We cannot revert to plaintext passwords
     pass

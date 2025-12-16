@@ -1,16 +1,21 @@
 from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
 from pyramid.session import SignedCookieSessionFactory
+from zope.sqlalchemy import register
 from .models import DBSession, Base
-
 
 def main(global_config, **settings):
     """Function returns a Pyramid WSGI application."""
     
     # Database configuration
     engine = engine_from_config(settings, 'sqlalchemy.')
+    
+    # Konfigurasi DBSession dengan engine
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
+    
+    # Register dengan zope.sqlalchemy untuk transaction integration
+    register(DBSession)
     
     # Session factory
     session_secret = settings.get('pyramid.session.secret', 'fallback_secret_for_dev')
@@ -21,6 +26,7 @@ def main(global_config, **settings):
         session_factory=session_factory
     )
     
+    # INCLUDE pyramid_tm SEBELUM konfigurasi lain
     config.include('pyramid_tm')
     config.include('pyramid_retry')
     
@@ -64,7 +70,7 @@ def main(global_config, **settings):
     config.add_route('course_students', '/api/courses/{id}/students', request_method='GET')
     config.add_route('student_progress', '/api/student/progress', request_method='GET')
     
-    # Scan views package (PERUBAHAN DI SINI)
+    # Scan views package
     config.scan('e_learning.views')
     
     return config.make_wsgi_app()

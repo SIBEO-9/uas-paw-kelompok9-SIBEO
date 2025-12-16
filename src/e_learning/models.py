@@ -11,7 +11,9 @@ from sqlalchemy import (
 )
 from passlib.context import CryptContext
 
-DBSession = scoped_session(sessionmaker())
+# HANYA SATU definisi DBSession
+maker = sessionmaker()
+DBSession = scoped_session(maker)
 Base = declarative_base()
 
 # Password hashing context - GUNAKAN Argon2

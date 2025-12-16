@@ -12,6 +12,10 @@ from ..models import DBSession, User
 def get_all_users(request):
     """Get all users (for testing)"""
     dbsession = DBSession()
+    
+    # PASTIKAN fresh query
+    dbsession.expire_all()
+    
     users = dbsession.query(User).all()
     return success_response(
         data=[u.to_dict() for u in users],
