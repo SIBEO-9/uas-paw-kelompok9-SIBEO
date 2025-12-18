@@ -13,7 +13,7 @@ requires = [
     'waitress==3.0.1',
     'plaster==1.0',
     'plaster_pastedeploy==0.7',
-    'webob==1.8.8',
+    'webob==1.8.7',  # KONSISTEN dengan requirements.txt
 ]
 
 dev_requires = [
