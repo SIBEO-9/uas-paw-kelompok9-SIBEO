@@ -8,15 +8,20 @@ from .models import DBSession, Base
 def main(global_config, **settings):
     """Function returns a Pyramid WSGI application."""
 
-    # 🔥 AMBIL ENV RENDER
+    # 1. AMBIL ENV RENDER (DATABASE & SECRET)
     database_url = os.environ.get("DATABASE_URL")
     session_secret = os.environ.get("SESSION_SECRET", "fallback-secret")
 
     if database_url:
+        # FIX: Render kadang memberi 'postgres://', ubah jadi 'postgresql://' agar SQLAlchemy senang
+        if database_url.startswith("postgres://"):
+            database_url = database_url.replace("postgres://", "postgresql://", 1)
+        
         settings['sqlalchemy.url'] = database_url
 
     settings['pyramid.session.secret'] = session_secret
 
+    # 2. KONFIGURASI ENGINE
     engine = engine_from_config(settings, 'sqlalchemy.')
     
     # Konfigurasi DBSession dengan engine
@@ -27,7 +32,6 @@ def main(global_config, **settings):
     register(DBSession)
     
     # Session factory
-    session_secret = settings.get('pyramid.session.secret', 'fallback_secret_for_dev')
     session_factory = SignedCookieSessionFactory(session_secret)
     
     config = Configurator(
@@ -49,7 +53,7 @@ def main(global_config, **settings):
     config.add_route('login', '/api/login', request_method='POST')
     config.add_route('logout', '/api/logout', request_method='POST')
 
-    # 3. Users (untuk testing)
+    # 3. Users
     config.add_route('users', '/api/users', request_method='GET')
     config.add_route('create_user', '/api/users', request_method='POST')
     config.add_route('user_detail', '/api/users/{id}', request_method='GET')
@@ -83,7 +87,6 @@ def main(global_config, **settings):
     config.scan('e_learning.views')
     
     return config.make_wsgi_app()
-
 
 def includeme(config):
     """For testing purposes."""
