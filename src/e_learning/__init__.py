@@ -9,7 +9,7 @@ from .models import DBSession, Base
 def add_cors_headers_response_callback(event):
     def cors_headers(request, response):
         response.headers.update({
-            # FIX: Gunakan request origin agar support credentials: 'true'
+            # Pastikan Origin diambil dari request untuk mendukung credentials
             'Access-Control-Allow-Origin': request.headers.get('Origin', '*'),
             'Access-Control-Allow-Methods': 'POST,GET,DELETE,PUT,OPTIONS',
             'Access-Control-Allow-Headers': 'Origin, Content-Type, Accept, Authorization',
@@ -26,7 +26,7 @@ def main(global_config, **settings):
     session_secret = os.environ.get("SESSION_SECRET", "fallback-secret")
 
     if database_url:
-        # FIX: Render kadang memberi 'postgres://', ubah jadi 'postgresql://' agar SQLAlchemy senang
+        # Render kadang memberi 'postgres://', ubah jadi 'postgresql://' agar SQLAlchemy kompatibel
         if database_url.startswith("postgres://"):
             database_url = database_url.replace("postgres://", "postgresql://", 1)
         
@@ -44,8 +44,17 @@ def main(global_config, **settings):
     # Register dengan zope.sqlalchemy untuk transaction integration
     register(DBSession)
     
-    # Session factory
-    session_factory = SignedCookieSessionFactory(session_secret)
+    # --- [MODIFIKASI UTAMA DI SINI] ---
+    # Session factory diperbarui untuk mendukung Cross-Origin (Frontend beda domain dengan Backend)
+    # dan HTTPS (Render).
+    session_factory = SignedCookieSessionFactory(
+        session_secret,
+        httponly=True,   # Keamanan: Cookie tidak bisa diakses via JavaScript document.cookie
+        secure=True,     # WAJIB True untuk Render/HTTPS agar samesite='None' berfungsi
+        samesite='None', # WAJIB 'None' agar cookie dikirim saat request PUT/DELETE antar domain
+        max_age=86400    # Opsional: Durasi session (contoh: 1 hari dalam detik)
+    )
+    # ----------------------------------
     
     config = Configurator(
         settings=settings,
@@ -56,7 +65,6 @@ def main(global_config, **settings):
     config.add_subscriber(add_cors_headers_response_callback, NewRequest)
     
     # Route khusus untuk menangani method OPTIONS pada semua endpoint /api/
-    # Menggunakan {path:.*} untuk menangkap semua sub-path
     config.add_route('cors_options_preflight', '/api/{path:.*}', request_method='OPTIONS')
     config.add_view(lambda request: request.response, route_name='cors_options_preflight')
     
