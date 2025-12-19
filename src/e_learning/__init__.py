@@ -3,7 +3,20 @@ from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
 from pyramid.session import SignedCookieSessionFactory
 from zope.sqlalchemy import register
+from pyramid.events import NewRequest
 from .models import DBSession, Base
+
+def add_cors_headers_response_callback(event):
+    def cors_headers(request, response):
+        response.headers.update({
+            # FIX: Gunakan request origin agar support credentials: 'true'
+            'Access-Control-Allow-Origin': request.headers.get('Origin', '*'),
+            'Access-Control-Allow-Methods': 'POST,GET,DELETE,PUT,OPTIONS',
+            'Access-Control-Allow-Headers': 'Origin, Content-Type, Accept, Authorization',
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Max-Age': '1728000',
+        })
+    event.request.add_response_callback(cors_headers)
 
 def main(global_config, **settings):
     """Function returns a Pyramid WSGI application."""
@@ -38,6 +51,14 @@ def main(global_config, **settings):
         settings=settings,
         session_factory=session_factory
     )
+
+    # --- CORS SETUP ---
+    config.add_subscriber(add_cors_headers_response_callback, NewRequest)
+    
+    # Route khusus untuk menangani method OPTIONS pada semua endpoint /api/
+    # Menggunakan {path:.*} untuk menangkap semua sub-path
+    config.add_route('cors_options_preflight', '/api/{path:.*}', request_method='OPTIONS')
+    config.add_view(lambda request: request.response, route_name='cors_options_preflight')
     
     # INCLUDE pyramid_tm SEBELUM konfigurasi lain
     config.include('pyramid_tm')
