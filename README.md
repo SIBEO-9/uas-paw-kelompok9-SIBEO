@@ -88,7 +88,7 @@ pserve src/config/development.ini --reload
 
 ## Link Deployment
 
-* **Frontend**: [https://github.com/SIBEO-9/uas-paw-kelompok9-SIBEO.git](https://github.com/SIBEO-9/uas-paw-kelompok9-SIBEO.git) .
+* **Frontend**: [https://sibeokelompok9-delta.vercel.app/](https://sibeokelompok9-delta.vercel.app/) .
 * **Backend API**: [https://uas-paw-kelompok9-sibeo.onrender.com/](https://uas-paw-kelompok9-sibeo.onrender.com/).
 
 ---
