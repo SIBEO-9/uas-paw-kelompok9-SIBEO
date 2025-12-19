@@ -52,7 +52,10 @@ def register(request):
     if validation_error:
         return validation_error
     
-    if data['role'] not in ['student', 'instructor']:
+    # Normalisasi role ke lowercase untuk konsistensi
+    role_input = data['role'].lower().strip()
+    
+    if role_input not in ['student', 'instructor']:
         return bad_request_error("Role must be 'student' or 'instructor'")
     
     dbsession = DBSession()
@@ -69,25 +72,24 @@ def register(request):
             name=data['name'],
             email=data['email'],
             password=data['password'],
-            role=data['role']
+            role=role_input
         )
         
         dbsession.add(new_user)
         # HANYA flush, JANGAN commit (pyramid_tm akan handle)
         dbsession.flush()
         
+        # Bersihkan session lama sebelum set session baru
+        request.session.invalidate()
+        
         # Set session
         request.session['user_id'] = new_user.id
         request.session['user_email'] = new_user.email
         request.session['user_role'] = new_user.role
         
-        # JANGAN expire_all() di sini! Ini akan menghapus new_user dari session
-        
     except IntegrityError:
-        # Pyramid_tm akan rollback otomatis
         return conflict_error('Email already exists')
     except Exception as e:
-        # Pyramid_tm akan rollback otomatis
         log.error(f"Registration error: {str(e)}")
         return server_error('Registration failed')
     
@@ -115,10 +117,14 @@ def login(request):
     if not user or not user.verify_password(data['password']):
         return unauthorized_error('Invalid email or password')
     
-    # Set session
+    # [FIX UTAMA] Invalidate session lama untuk mencegah conflict/stale data
+    request.session.invalidate()
+    
+    # Set session baru
     request.session['user_id'] = user.id
     request.session['user_email'] = user.email
-    request.session['user_role'] = user.role
+    # Pastikan role disimpan bersih (antisipasi spasi di DB)
+    request.session['user_role'] = user.role.strip().lower() if user.role else ''
     
     return success_response(data=user.to_dict(), message='Login successful')
 

@@ -25,11 +25,17 @@ def role_required(allowed_roles):
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
-            user_role = request.session.get('user_role')
-            if not user_role:
+            raw_role = request.session.get('user_role')
+            if not raw_role:
                 return unauthorized_error('Authentication required')
             
-            if user_role not in allowed_roles:
+            # [FIX] Normalisasi role dari session untuk menghindari error typo/spasi
+            user_role = str(raw_role).strip().lower()
+            
+            # Pastikan allowed_roles juga dinormalisasi saat pengecekan
+            clean_allowed = [r.lower() for r in allowed_roles]
+            
+            if user_role not in clean_allowed:
                 return forbidden_error(f'Access denied. Required roles: {allowed_roles}')
             
             return view_func(request, *args, **kwargs)
@@ -39,7 +45,11 @@ def role_required(allowed_roles):
 def instructor_only(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        user_role = request.session.get('user_role')
+        # Gunakan role_required logic manual atau decorator, 
+        # tapi di sini kita konsistenkan manual check seperti aslinya tapi lebih aman
+        raw_role = request.session.get('user_role')
+        user_role = str(raw_role).strip().lower() if raw_role else ''
+        
         if user_role != 'instructor':
             return forbidden_error('Instructor access only')
         return view_func(request, *args, **kwargs)
