@@ -154,7 +154,7 @@ Kelompok 9 - UAS Pemrograman Aplikasi Web:
 
 ---
 
-**Repository Frontend**: [https://github.com/SIBEO-9/uas-paw-kelompok9-SIBEO.git](https://github.com/SIBEO-9/uas-paw-kelompok9-SIBEO.git)
+**Repository Frontend**: [https://github.com/SIBEO-9/uas-paw-kelompok9-SIBEO/tree/frontend-SIBEO](https://github.com/SIBEO-9/uas-paw-kelompok9-SIBEO/tree/frontend-SIBEO)
 
 **Backend API**: https://uas-paw-kelompok9-sibeo.onrender.com/api
 
