@@ -111,7 +111,7 @@ Backend menggunakan format respons JSON standar: `{ "data": {...}, "message": "S
 ## Screenshot Aplikasi
 
 * **Homepage** ![home](https://github.com/SIBEO-9/uas-paw-kelompok9-SIBEO/blob/main/img/dashboard.png ) 
-* **Dashboard**: `![Dashboard](./public/logo.png)`
+* **Kategori Kursus** ![home](https://github.com/SIBEO-9/uas-paw-kelompok9-SIBEO/blob/main/img/kategori.png ) 
 
 ---
 
